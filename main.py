@@ -18,7 +18,7 @@ def fulldate_to_split_str(date: str)-> str:
     return ' '.join(date.split('T'))
 
 
-
+###Initializing parser###
 parser = argparse.ArgumentParser()
 
 parser.add_argument('ADT', type=int)
@@ -42,6 +42,8 @@ args.DateIn = date_to_str(args.DateIn)
 
 param_args = vars(args)
 
+###PREDEFINED PARAMS###
+
 param_args['Disc'] = 0
 param_args['promoCode'] = ''
 param_args['IncludeConnectinFlights'] = 'false'
@@ -53,15 +55,27 @@ param_args['ToUs'] = 'AGREED'
 param_args['ChangeFlight'] = 'undefined'
 
 
+###REQUESTING RYANAIR DATA FROM API###
 result = requests.get('https://www.ryanair.com/api/booking/v4/pl-pl/availability?', params=param_args)
-empty_flights = 0 
+
+###INITIALIZING VARIABLES###
 list_of_flights = []
+flights = []
+
+adults_count = 0
+adults_price = 0
+adults_discount = 0
+teen_count = 0
+teen_price = 0
+teen_discount = 0
+chd_count = 0
+chd_price = 0
+chd_discount = 0
 
 if result.status_code == 404:
     print('No flights found')
 else:
     response_dict = json.loads(result.text)
-    #print(json.dumps(response_dict, indent=4))
     currency = response_dict['currency']
     trips = response_dict['trips']
     for trip in trips:
@@ -69,6 +83,7 @@ else:
         origin = trip['origin']
         destination = trip['destination']
         dates = trip['dates']
+        empty_flights = 0 
         for date in dates:
             if date['flights'] != []:
                 for flight in date['flights']:
@@ -106,9 +121,7 @@ else:
                 empty_flights += 1
 
         if empty_flights != 5:
-            list_of_flights.append({
-                'Type':round_trip,
-                'flights':[{
+            flights.append({
                     'Heading': 'Back' if param_args['Origin'] == destination else 'To', 
                     'Adults':adults_count,
                     'Teens':teen_count,
@@ -124,13 +137,31 @@ else:
                     'Carrier': re.sub(r'[\s\d]', '', flight_number),
                     'Flightnumber': re.sub(r'[\sa-zA-Z]', '', flight_number),
                     'Segments': segments
-                }]
-            })
+                })
         else:
-            list_of_flights.append({
-                'Message': f'No flights to {destination} from {param_args["Origin"]} found'
+            flights.append({
+                'Message': f'No flights to {origin} from {destination} found'
             })
+    
+    list_of_flights.append({
+            'Type':round_trip,
+            'flights': flights
+        })
 
 print(json.dumps(list_of_flights, indent=4))
 
-# main.py 1 0 0 0 KTW ATH RT 2022-05-19 2022-06-23
+
+"""
+Example usage:
+main.py - name of file
+1 - Adult
+0 - Teen
+0 - Children
+0 - Infant
+KTW - Origin
+ATH - Destination
+RT - One way or round trip
+2022-05-26 - Date of flight
+2022-06-23 - Date of back flight
+"""
+#main.py 1 0 0 0 KTW ATH RT 2022-05-26 2022-06-23
