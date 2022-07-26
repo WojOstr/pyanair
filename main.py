@@ -1,24 +1,62 @@
 import argparse
-from urllib import response
 import requests
 import datetime
 import json
 import re
 
-def roundtrip_to_str_bool(trip: str)-> str:
+def roundtrip_to_str_bool(trip: str)-> bool:
+    """
+    Get boolean value based on input parameters of trip
+
+    Parameters
+    ----------
+    trip
+        either RT or OW string representing type of flight
+    
+    Return
+    ------
+    bool
+        a bool representing True if it's Round trip, False if it's One way
+    """
     return True if trip == 'RT' else False
 
 def date_to_str(date: datetime.date.isoformat)-> str:
+    """Convert date to string
+    
+    Parameters
+    ----------
+    date
+        date in datetime.date.isoformat
+    
+    Return
+    ------
+    str
+        converted parameter date to str
+    """
     return str(date)
 
 def calculate_flight_price(a_c: int, a_p: int, a_d: int, t_c: int, t_p: int, t_d: int, c_c: int, c_p: int, c_d: int)-> float:
+    """Calculate price with round to 2 decimals
+
+    Parameters
+    ----------
+    *_[c, p, d] stands for count, price, discount
+    [a, t, c]_* stands for adults, teen, child
+
+    Return
+    ------
+    float
+        float representing price with round to 2 decimals
+    
+    """
     return round(a_c * a_p - a_d + t_c * t_p - t_d + c_c * c_p - c_d,2)
 
 def fulldate_to_split_str(date: str)-> str:
+    """Split string by 'T' sign and return new string"""
     return ' '.join(date.split('T'))
 
 
-###Initializing parser###
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument('ADT', type=int)
@@ -27,7 +65,7 @@ parser.add_argument('CHD', type=int)
 parser.add_argument('INF', type=int)
 parser.add_argument('Origin', type=str)
 parser.add_argument('Destination', type=str)
-parser.add_argument('RoundTrip', type=str, choices=['RT', 'OW']) # OW, RT
+parser.add_argument('RoundTrip', type=str, choices=['RT', 'OW'])        # RT - Round Trip, OW - One Way
 parser.add_argument('DateOut', type=datetime.date.fromisoformat)
 parser.add_argument('DateIn', type=datetime.date.fromisoformat)
 
@@ -35,15 +73,12 @@ parser.add_argument('DateIn', type=datetime.date.fromisoformat)
 args = parser.parse_args()
 
 round_trip = args.RoundTrip[:]
-
 args.RoundTrip = roundtrip_to_str_bool(args.RoundTrip)
 args.DateOut = date_to_str(args.DateOut)
 args.DateIn = date_to_str(args.DateIn)
-
 param_args = vars(args)
 
 ###PREDEFINED PARAMS###
-
 param_args['Disc'] = 0
 param_args['promoCode'] = ''
 param_args['IncludeConnectinFlights'] = 'false'
@@ -54,14 +89,11 @@ param_args['FlexDaysOut'] = 2
 param_args['ToUs'] = 'AGREED'
 param_args['ChangeFlight'] = 'undefined'
 
-
-###REQUESTING RYANAIR DATA FROM API###
-result = requests.get('https://www.ryanair.com/api/booking/v4/pl-pl/availability?', params=param_args)
+result = requests.get('https://www.ryanair.com/api/booking/v4/pl-pl/availability?', params=param_args)      # Request Ryanair data from API
 
 ###INITIALIZING VARIABLES###
 list_of_flights = []
 flights = []
-
 adults_count = 0
 adults_price = 0
 adults_discount = 0
@@ -72,7 +104,7 @@ chd_count = 0
 chd_price = 0
 chd_discount = 0
 
-if result.status_code == 404:
+if result.status_code == 404:       # Check if requests return code is valid
     print('No flights found')
 else:
     response_dict = json.loads(result.text)
