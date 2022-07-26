@@ -65,7 +65,7 @@ def fulldate_to_split_str(inp_date: str)-> str:
         string representing input date without 'T' signs inside
     """
     return ' '.join(inp_date.split('T'))
-
+    
 
 ###Initializing parser###
 parser = argparse.ArgumentParser()
@@ -84,11 +84,9 @@ parser.add_argument('DateIn', type=datetime.date.fromisoformat)
 args = parser.parse_args()
 
 round_trip = args.RoundTrip[:]
-
 args.RoundTrip = roundtrip_to_str_bool(args.RoundTrip)
 args.DateOut = date_to_str(args.DateOut)
 args.DateIn = date_to_str(args.DateIn)
-
 param_args = vars(args)
 
 ###PREDEFINED PARAMS###
