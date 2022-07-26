@@ -1,21 +1,70 @@
 import argparse
-from urllib import response
-import requests
 import datetime
 import json
 import re
+import requests
 
-def roundtrip_to_str_bool(trip: str)-> str:
-    return True if trip == 'RT' else False
+def roundtrip_to_str_bool(s_trip: str)-> bool:
+    """
+    Get boolean value based on input parameters of s_trip
 
-def date_to_str(date: datetime.date.isoformat)-> str:
-    return str(date)
+    Parameters
+    ----------
+    s_trip
+        either RT or OW string representing type of flight
+
+    Return
+    ------
+    bool
+        a bool representing True if it's Round trip, False if it's One way
+    """
+    return s_trip == 'RT'
+
+def date_to_str(inp_date: datetime.date.isoformat)-> str:
+    """Convert date to string
+
+    Parameters
+    ----------
+    inp_date
+        date in datetime.date.isoformat
+
+    Return
+    ------
+    str
+        converted parameter inp_date to str
+    """
+    return str(inp_date)
 
 def calculate_flight_price(a_c: int, a_p: int, a_d: int, t_c: int, t_p: int, t_d: int, c_c: int, c_p: int, c_d: int)-> float:
-    return round(a_c * a_p - a_d + t_c * t_p - t_d + c_c * c_p - c_d,2)
+    """Calculate price with round to 2 decimals
 
-def fulldate_to_split_str(date: str)-> str:
-    return ' '.join(date.split('T'))
+    Parameters
+    ----------
+    *_[c, p, d] stands for count, price, discount
+    [a, t, c]_* stands for adults, teen, child
+
+    Return
+    ------
+    float
+        float representing price with round to 2 decimals
+
+    """
+    return round(a_c * a_p - a_d + t_c * t_p - t_d + c_c * c_p - c_d, 2)
+
+def fulldate_to_split_str(inp_date: str)-> str:
+    """Split string by 'T' sign and return new string
+
+    Parameters
+    ----------
+    inp_date
+        str consising of date
+
+    Return
+    ------
+    str
+        string representing input date without 'T' signs inside
+    """
+    return ' '.join(inp_date.split('T'))
 
 
 ###Initializing parser###
@@ -27,7 +76,7 @@ parser.add_argument('CHD', type=int)
 parser.add_argument('INF', type=int)
 parser.add_argument('Origin', type=str)
 parser.add_argument('Destination', type=str)
-parser.add_argument('RoundTrip', type=str, choices=['RT', 'OW']) # OW, RT
+parser.add_argument('RoundTrip', type=str, choices=['RT', 'OW'])       # OW, RT
 parser.add_argument('DateOut', type=datetime.date.fromisoformat)
 parser.add_argument('DateIn', type=datetime.date.fromisoformat)
 
@@ -43,7 +92,6 @@ args.DateIn = date_to_str(args.DateIn)
 param_args = vars(args)
 
 ###PREDEFINED PARAMS###
-
 param_args['Disc'] = 0
 param_args['promoCode'] = ''
 param_args['IncludeConnectinFlights'] = 'false'
@@ -54,14 +102,12 @@ param_args['FlexDaysOut'] = 2
 param_args['ToUs'] = 'AGREED'
 param_args['ChangeFlight'] = 'undefined'
 
-
-###REQUESTING RYANAIR DATA FROM API###
-result = requests.get('https://www.ryanair.com/api/booking/v4/pl-pl/availability?', params=param_args)
+result = requests.get('https://www.ryanair.com/api/booking/v4/pl-pl/availability?', 
+         params=param_args)
 
 ###INITIALIZING VARIABLES###
 list_of_flights = []
 flights = []
-
 adults_count = 0
 adults_price = 0
 adults_discount = 0
@@ -72,7 +118,7 @@ chd_count = 0
 chd_price = 0
 chd_discount = 0
 
-if result.status_code == 404:
+if result.status_code == 404:       # Check if response from API is correct
     print('No flights found')
 else:
     response_dict = json.loads(result.text)
@@ -127,8 +173,9 @@ else:
                     'Teens':teen_count,
                     'Children':chd_count,
                     'Currency':currency,
-                    'Price':calculate_flight_price(adults_count, adults_price, adults_discount, teen_count, teen_price, teen_discount, chd_count,
-                    chd_price, chd_discount),
+                    'Price':calculate_flight_price(adults_count, adults_price, adults_discount, 
+                    teen_count, teen_price, teen_discount, 
+                    chd_count, chd_price, chd_discount),
                     'Origin': origin,
                     'Destination': destination,
                     'Departure': fulldate_to_split_str(time_out),
@@ -142,26 +189,10 @@ else:
             flights.append({
                 'Message': f'No flights to {origin} from {destination} found'
             })
-    
+
     list_of_flights.append({
             'Type':round_trip,
             'flights': flights
         })
 
 print(json.dumps(list_of_flights, indent=4))
-
-
-"""
-Example usage:
-main.py - name of file
-1 - Adult
-0 - Teen
-0 - Children
-0 - Infant
-KTW - Origin
-ATH - Destination
-RT - One way or round trip
-2022-05-26 - Date of flight
-2022-06-23 - Date of back flight
-"""
-#main.py 1 0 0 0 KTW ATH RT 2022-05-26 2022-06-23
