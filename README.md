@@ -5,13 +5,15 @@ Basic app using Ryanair endpoint and requests library to get flights on given da
 ## Setup
 
 To install, simply download the repo and install requests library using pip
-"""pip install requests"""
+~~~
+pip install requests
+~~~
 
 ## Example of usage
 
-"""
+~~~
 /path/to/script/main.py 1 0 0 0 KTW ATH RT 2022-08-03 2022-08-15
-"""
+~~~
 
 Where following parameters are:
 Adult, Teen, Children, Infant, Origin, Destination, trip type (RT, OW), Date of flight, Date of back flight
