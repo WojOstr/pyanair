@@ -131,21 +131,22 @@ else:
         for date in dates:
             if date['flights'] != []:
                 for flight in date['flights']:
-                    for fare in flight['regularFare']['fares']:
-                        if fare['type'] == 'ADT':
-                            adults_count = fare['count']
-                            adults_price = fare['amount']
-                            adults_discount = fare['discountAmount']
+                    if 'regularFare' in flight:
+                        for fare in flight['regularFare']['fares']:
+                            if fare['type'] == 'ADT':
+                                adults_count = fare['count']
+                                adults_price = fare['amount']
+                                adults_discount = fare['discountAmount']
 
-                        if fare['type'] == 'TEEN':
-                            teen_count = fare['count']
-                            teen_price = fare['amount']
-                            teen_discount = fare['discountAmount']
+                            if fare['type'] == 'TEEN':
+                                teen_count = fare['count']
+                                teen_price = fare['amount']
+                                teen_discount = fare['discountAmount']
 
-                        if fare['type'] == 'CHD':
-                            chd_count = fare['count']
-                            chd_price = fare['amount']
-                            chd_discount = fare['discountAmount']
+                            if fare['type'] == 'CHD':
+                                chd_count = fare['count']
+                                chd_price = fare['amount']
+                                chd_discount = fare['discountAmount']
 
                     for segment in flight['segments']:
                         segments.append({
