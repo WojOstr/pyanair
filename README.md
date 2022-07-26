@@ -17,7 +17,6 @@ Where following parameters are:
 Adult, Teen, Children, Infant, Origin, Destination, trip type (RT, OW), Date of flight, Date of back flight
 
 Example response might look like this:
-"""
 [
     {
         "Type": "RT",
@@ -77,6 +76,5 @@ Example response might look like this:
         ]
     }
 ]
-"""
 
 
